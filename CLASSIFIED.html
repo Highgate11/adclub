@@ -1,0 +1,310 @@
+<html>
+ <head>
+  <title>
+   AI-Powered Classifieds with Voice Bot
+  </title>
+  <script src="https://cdn.tailwindcss.com">
+  </script>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet"/>
+ </head>
+ <body class="bg-gray-100 font-roboto">
+  <div class="container mx-auto p-4" id="app">
+   <header class="text-center my-4">
+    <h1 class="text-4xl font-bold">
+     AI-Powered Classifieds with Voice Bot
+    </h1>
+    <p class="text-gray-700">
+     Your one-stop solution for all classified services powered by AI and voice bot.
+    </p>
+   </header>
+   <main>
+    <!-- Admin Login Section -->
+    <section v-if="!isAuthenticated" class="my-8">
+     <h2 class="text-2xl font-bold mb-4">
+      Admin Login
+     </h2>
+     <form class="bg-white p-4 rounded shadow" @submit.prevent="login">
+      <div class="mb-4">
+       <label class="block text-gray-700" for="username">
+        Username
+       </label>
+       <input class="w-full p-2 border border-gray-300 rounded" id="username" placeholder="Enter username" type="text" v-model="username"/>
+      </div>
+      <div class="mb-4">
+       <label class="block text-gray-700" for="password">
+        Password
+       </label>
+       <input class="w-full p-2 border border-gray-300 rounded" id="password" placeholder="Enter password" type="password" v-model="password"/>
+      </div>
+      <div class="mb-4">
+       <label class="block text-gray-700" for="pin">
+        Pin
+       </label>
+       <input class="w-full p-2 border border-gray-300 rounded" id="pin" placeholder="Enter pin" type="text" v-model="pin"/>
+      </div>
+      <button class="bg-blue-500 text-white px-4 py-2 rounded" type="submit">
+       Login
+      </button>
+     </form>
+    </section>
+    <!-- Admin Portal Section -->
+    <section v-if="isAuthenticated" class="my-8">
+     <h2 class="text-2xl font-bold mb-4">
+      Admin Portal
+     </h2>
+     <!-- Place Your Listings Here Section -->
+     <section class="my-8">
+      <h2 class="text-2xl font-bold mb-4">
+       Place Your Listings Here
+      </h2>
+      <form class="bg-white p-4 rounded shadow" @submit.prevent="addListing">
+       <div class="mb-4">
+        <label class="block text-gray-700" for="listing-title">
+         Listing Title
+        </label>
+        <input class="w-full p-2 border border-gray-300 rounded" id="listing-title" placeholder="Enter listing title" type="text" v-model="newListing.title"/>
+       </div>
+       <div class="mb-4">
+        <label class="block text-gray-700" for="listing-description">
+         Description
+        </label>
+        <textarea class="w-full p-2 border border-gray-300 rounded" id="listing-description" placeholder="Enter description" rows="4" v-model="newListing.description">
+        </textarea>
+       </div>
+       <div class="mb-4">
+        <label class="block text-gray-700" for="listing-price">
+         Price (if applicable)
+        </label>
+        <input class="w-full p-2 border border-gray-300 rounded" id="listing-price" placeholder="Enter price" type="number" v-model="newListing.price"/>
+       </div>
+       <div class="mb-4">
+        <label class="block text-gray-700" for="listing-category">
+         Category
+        </label>
+        <select class="w-full p-2 border border-gray-300 rounded" id="listing-category" v-model="newListing.category">
+         <option>
+          Automobile
+         </option>
+         <option>
+          Articles for Sale
+         </option>
+         <option>
+          Real Estate
+         </option>
+         <option>
+          Job Search
+         </option>
+         <option>
+          Help Wanted
+         </option>
+         <option>
+          Personal Services
+         </option>
+         <option>
+          Lawn Care
+         </option>
+         <option>
+          Tree Trimmers
+         </option>
+         <option>
+          Builders and Contractors
+         </option>
+         <option>
+          Computer Repairs
+         </option>
+         <option>
+          Business Listings
+         </option>
+         <option>
+          Health
+         </option>
+         <option>
+          Herbal
+         </option>
+         <!-- Add more categories as needed -->
+        </select>
+       </div>
+       <div class="mb-4">
+        <label class="block text-green-700" for="listing-file">
+         Upload your images or videos here!
+        </label>
+        <input class="w-full p-2 border border-gray-300 rounded" id="listing-file" type="file" accept="image/*" @change="handleFileUpload"/>
+       </div>
+       <div class="mb-4">
+        <label class="block text-gray-700" for="listing-video">
+         Upload Video or Video URL
+        </label>
+        <input class="w-full p-2 border border-gray-300 rounded" id="listing-video" placeholder="Enter video URL or upload video" type="text" v-model="newListing.videoUrl"/>
+        <input class="w-full p-2 border border-gray-300 rounded mt-2" id="listing-video-file" type="file" accept="video/*" @change="handleVideoUpload"/>
+       </div>
+       <button class="bg-blue-500 text-white px-4 py-2 rounded" type="submit">
+        Place Listing
+       </button>
+      </form>
+     </section>
+     <!-- Manage Listings Section -->
+     <section class="my-8">
+      <h2 class="text-2xl font-bold mb-4">
+       Manage Listings
+      </h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+       <!-- Listing Item 1 -->
+       <div class="bg-white p-4 rounded shadow" v-for="(listing, index) in listings" :key="index">
+        <div class="relative">
+         <img :alt="listing.title" class="w-full h-48 object-cover rounded" :src="listing.image" height="200" width="300"/>
+         <button @click="replaceImage(index)" class="absolute top-2 right-2 bg-yellow-500 text-white p-1 rounded-full">
+          <i class="fas fa-edit"></i>
+         </button>
+        </div>
+        <h3 class="text-xl font-bold mt-2">
+         {{ listing.title }}
+        </h3>
+        <p class="text-gray-700">
+         {{ listing.description }}
+        </p>
+        <p class="text-gray-500 text-sm">
+         Date: {{ listing.date }}, Time: {{ listing.time }}
+        </p>
+        <button @click="deleteListing(index)" class="block mt-2 text-center bg-red-500 text-white py-2 rounded">
+         Delete
+        </button>
+       </div>
+       <!-- Add more listing items as needed -->
+      </div>
+     </section>
+    </section>
+   </main>
+  </div>
+  <script src="https://registry.npmmirror.com/vue/3.3.11/files/dist/vue.global.js">
+  </script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/js/all.min.js">
+  </script>
+  <script>
+   const { createApp, ref } = Vue;
+    createApp({
+      setup() {
+        const isAuthenticated = ref(false);
+        const username = ref('');
+        const password = ref('');
+        const pin = ref('');
+        const currentSection = ref('');
+        const sectionTitle = ref('');
+        const newListing = ref({
+          title: '',
+          description: '',
+          price: '',
+          category: '',
+          videoUrl: '',
+          images: [],
+          videos: []
+        });
+        const listings = ref([
+          {
+            title: '1998 Toyota Camry, Color Gold',
+            description: 'Asking $350,000 Jamaican dollars. Car is located at 23 Casava Piece Way, St. Andrew. WhatsApp 1-876-232-1683 Email: linsteadd@gmail.com - Ask for Wayne or Errol',
+            image: 'https://storage.googleapis.com/a1aa/image/ye93ovd2fEs1PE3eeXehFOk92sOuGfIMRG0cXLfadZbZxxRyJA.jpg',
+            date: '2023-10-01',
+            time: '14:30'
+          }
+        ]);
+
+        const login = () => {
+          if (username.value === 'Admin' && password.value === 'Admin' && pin.value === '1958') {
+            isAuthenticated.value = true;
+          } else {
+            alert('Invalid credentials');
+          }
+        };
+
+        const showSection = (section) => {
+          currentSection.value = section;
+          switch (section) {
+            case 'search':
+              sectionTitle.value = 'Search Listings';
+              break;
+            case 'listing1':
+              sectionTitle.value = '1998 Toyota Camry, Color Gold';
+              break;
+            case 'listing2':
+              sectionTitle.value = 'Item 2';
+              break;
+            case 'listing3':
+              sectionTitle.value = 'Item 3';
+              break;
+            default:
+              sectionTitle.value = '';
+          }
+        };
+
+        const handleFileUpload = (event) => {
+          const files = event.target.files;
+          for (let i = 0; i < files.length; i++) {
+            newListing.value.images.push(URL.createObjectURL(files[i]));
+          }
+        };
+
+        const handleVideoUpload = (event) => {
+          const files = event.target.files;
+          for (let i = 0; i < files.length; i++) {
+            newListing.value.videos.push(URL.createObjectURL(files[i]));
+          }
+        };
+
+        const replaceImage = (index) => {
+          const input = document.createElement('input');
+          input.type = 'file';
+          input.accept = 'image/*';
+          input.onchange = (event) => {
+            const file = event.target.files[0];
+            if (file) {
+              listings.value[index].image = URL.createObjectURL(file);
+            }
+          };
+          input.click();
+        };
+
+        const addListing = () => {
+          listings.value.push({
+            title: newListing.value.title,
+            description: newListing.value.description,
+            image: newListing.value.images[0],
+            date: new Date().toISOString().split('T')[0],
+            time: new Date().toLocaleTimeString()
+          });
+          newListing.value = {
+            title: '',
+            description: '',
+            price: '',
+            category: '',
+            videoUrl: '',
+            images: [],
+            videos: []
+          };
+        };
+
+        const deleteListing = (index) => {
+          listings.value.splice(index, 1);
+        };
+
+        return {
+          isAuthenticated,
+          username,
+          password,
+          pin,
+          currentSection,
+          sectionTitle,
+          newListing,
+          listings,
+          login,
+          showSection,
+          handleFileUpload,
+          handleVideoUpload,
+          replaceImage,
+          addListing,
+          deleteListing
+        };
+      }
+    }).mount('#app');
+  </script>
+ </body>
+</html>
